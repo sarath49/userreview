@@ -1,0 +1,176 @@
+.userreview_dummy{
+}
+/* the table containing userreview */
+.userreview_view {
+    //width: 100%;
+    background-color: #F4F4F4;
+    border: 1px solid #000000;
+    margin: 0;
+    padding: 0em .5em 0em .5em;
+}
+
+/* the header bar over a review */
+.userreview_view th {
+    //width: 100%;
+    background-color: #C4D3DB;
+    font-weight: bold;
+    text-align: left;
+    border: 0;
+    padding-left: 0.5em;
+}
+
+/* the table containing a userreview (in teaser mode) */
+.userreview_view_teaser {
+    margin: 0;
+    padding: 0em .5em 0em .5em;
+}
+
+/* the td containing the vote box */
+.userreview_review_vote_container {
+    text-align: center;
+    padding-left: 0.5em;
+    padding-right: 1em;
+    padding-top: 0;
+}
+
+/* the vote box (table) (includes number plus caption) */
+.userreview_review_vote {
+    text-align: center;
+    display: inline;
+}
+
+/* the vote number */
+.userreview_review_number {
+    /* display:block; */
+    text-align: center;
+    font-size: 2.2em;
+    background-color: #F4F4F4;
+    padding: 0em 0em -.35em 0em;
+    margin: 0em 0em 0em 0em;
+    border: 2px solid #000000;
+}
+
+/* the vote caption */
+.userreview_review_number_caption {
+    /* display: block; */
+    font-size: 0.8em;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* the title of the review */
+.userreview_review_title {
+    display: block;
+    font-weight: bold;
+}
+
+/* the body of the review */
+.userreview_review_body {
+    display:block;
+}
+
+/* the link to edit your userrreview */
+.userreview_review_link {
+    display:block;
+    white-space: nowrap;
+    padding-right: 0.5em;
+}
+
+/* the vote selector form element */
+table.userreview_selector_table {
+    padding: 0em;
+    margin: 0em;
+}
+
+/* the td element containing each vote option, within the vote selector form */
+td.userreview_vote_option_container {
+vertical-align:middle;
+}
+.userreview_vote_option_container a:hover{
+    text-decoration: none;
+}
+a.userreview_vote_option {
+  color: #A1A1A1;
+  background-color: #FFFFFF;
+  text-decoration: none;
+  border: 2px solid #A1A1A1;
+  margin-right: 0.1em;
+  padding: 0em .2em 0em .2em;
+  font-size: 1.2em;
+}
+
+a.userreview_vote_option_hover {
+  border: 2px solid #000000;
+  background-color: #33FF33;
+  color: #000000;
+  text-decoration: none;
+  cursor: pointer;
+  margin-right: 0.1em;
+  padding: 0em .2em 0em .2em;
+  font-size: 1.2em;
+}
+.userreview_vote_selected {
+  color: #000000;
+  font-size: 2.3em;
+}
+a.userreview_vote_selected {
+  color: #000000;
+  text-decoration: none;
+}
+a.userreview_vote_selected:hover {
+  color: #000000;
+  text-decoration: none;
+}
+
+.userreview_included_form {
+   border: 1px solid #000000;
+   background-color: #F4F4F4;
+}
+
+.userreview_included_form h2{
+   width: 100%
+   background-color: #F4F4F4;
+   padding: 0em 1em 0em 1em;
+   margin: 0em 0em 0em 0em;
+   background-color: #C4D3DB;
+   font-weight: bold;
+   text-align: left;
+}
+
+.userreview_included_form_content{
+   padding: 0em 1em 0em 1em;
+   margin: 0;
+}
+
+/* Reporting voting results */
+.userreview_voting_result {
+    vertical-align:middle;
+    margin-bottom: 0.5em;
+}
+
+.userreview_average_vote {
+vertical-align:middle;
+text-align: center;
+padding-left: 1em;
+}
+
+.userreview_count_votes {
+
+}
+
+.userreview_voting_result_label {
+    //display: block;
+    font-weight: bold;
+}
+
+.userreview_voting_result_label_minor {
+
+}
+
+.userreview_byline {
+    font-size: 0.8em
+}
+
+//margin: -.2em 0em -.3em 0em;
+    //padding-bottom: -.8em;
