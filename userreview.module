@@ -14,7 +14,7 @@ function userreview_help($section) {
   switch ($section) {
     case 'admin/modules#description':
       // This description is shown in the listing at admin/modules.
-      return t('Defines a user review content type.  Requires votingapi module.');
+      return t('Defines a user review content type. Requires votingapi module and views module.');
     case 'admin/help#userreview':
       return t('The userreview content type is a node, which is attached to another node.  It has a 0 to 10 voting scale.  You set a number of configuration options at ') . l('admin/settings/userreview', 'admin/settings/userreview') . t('.  Here, you can set which node types are reviewable, how many reviews to display beneath the reviewed node per page, and others.') . '<br/><br/>' . t('This module requires views module and the votingapi module.  Using views, it is easy to create blocks or pages which display top rated nodes of a given type, for example.') . '<br/><br/>' . t('This module was designed for Drupal version 4.7.');
      case 'node/add#userreview':
@@ -214,7 +214,9 @@ function userreview_form(&$node) {
   $add_elements['content_type'] = array('#type' => 'value', '#value' => $node->content_type);
   $add_elements['vote_tag'] = array('#type' => 'value', '#value' => $node->vote_tag);
   
-  return array_merge($add_elements, filter_form($node->format));
+  //return array_merge($add_elements, filter_form($node->format));
+  $add_elements['format'] = filter_form($node->format);
+  return $add_elements;
 }
 
 function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
