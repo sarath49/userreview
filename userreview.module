@@ -237,6 +237,7 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         if ($count_votes > 0) {
           $avg_vote = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, $node->type, 'average');
           $node->userreview->average_vote = theme('userreview_voting_results', $avg_vote->value, $count_votes->value);
+          
           $node->body .= $node->userreview->average_vote;
         }
         
@@ -244,11 +245,8 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         $userreviewnode = get_userreview_node($node, $user->uid);
         //if a review exists by this user, show it...
         if ($userreviewnode) {
-          //userreview_debug('nodeapi userreviewnode=', $userreviewnode, false, false);
-          $node = node_prepare($node, $teaser);
           $node->userreview->current_user_review = theme('userreview', $userreviewnode);
           $node->body .= $node->userreview->current_user_review;
-          //$node->body .= node_view($userreviewnode);
           
         //...otherwise show the form to create a user review
         } else if(user_access('create user reviews')) { 
@@ -311,7 +309,6 @@ function get_userreview_node($content_node, $uid = 0, $default = false) {
  * Return the form data for generation of the voting form element.
  */
 function userreview_vote_selector($vote_value, $default='') {
-  //userreview_debug('userreview vote value',$vote_value);
   if ($vote_value==null) {
     $vote_value = $default;
   }
@@ -360,7 +357,6 @@ function theme_userreview_number_selector($element) {
   $element_form_id = 'edit-' . $element_name;
   $element_form_name = 'edit[' . $element_name . ']';
   $element_number_base = $element_name . '_userreview_number_selector_';
-  //userreview_debug('userreview selector',$element);
   
   $element_html = '';
   $extra_html = '';
@@ -400,7 +396,7 @@ function userreview_insert($node) {
   if (isset($_REQUEST['edit']['vote_value'])) {
     $node->vote_value = (int)$_REQUEST['edit']['vote_value'];
   }
-  //userreview_debug('To Vote on Node', $node);
+
   //store the vote using votingapi
   $vobj = new stdClass();
   //$vobj->value = ($node->vote_value * 10);
@@ -409,7 +405,7 @@ function userreview_insert($node) {
   $vobj->value_type = VOTINGAPI_VALUE_TYPE_PERCENT;
   $vobj->tag = $node->vote_tag;
   votingapi_set_vote($node->content_type, $node->content_id, $vobj, $user->uid);
-  //userreview_debug('Inserting Vote Object', $vobj);
+
   //get the new vote's vid
   $inserted_vobj = votingapi_get_vote($node->content_type, $node->content_id, $vobj->value_type, $vobj->tag, $user->uid);
   $next_id = db_next_id('userreview');
@@ -425,22 +421,19 @@ function userreview_insert($node) {
  * votingapi.
  */
 function userreview_update($node) {
-  //userreview_debug($node->nid . 'userreview_update BEFORE: node=',$node);
+
   if (isset($_REQUEST['edit']['vote_value'])) {
     $node->vote_value = (int)$_REQUEST['edit']['vote_value'];
   }
-  //userreview_debug($node->nid . 'userreview_update AFTER: node=',$node);
+
   //update only the vote value in the userreview table.
   db_query("UPDATE {userreview} set vote_value = %d, review_text = '%s' where nid = %d", $node->vote_value, $node->review_text, $node->nid);
     
   //store the vote using votingapi
-  //userreview_debug('Request', $_REQUEST);
-  //userreview_debug('Node', $node);
   $vote = new stdClass();
   $vote->value = $node->vote_value;
   $vote->value_type = VOTINGAPI_VALUE_TYPE_PERCENT;
   $vote->tag = $node->vote_tag;
-  //userreview_debug('Vote', $vote);
   votingapi_set_vote($node->content_type, $node->content_id, $vote, $user->uid);
 }
 
@@ -528,7 +521,6 @@ function userreview_form_alter($form_id, &$form) {
  * Themes a userreview node for full (page) view
  */
 function theme_userreview($node) {
-  //userreview_debug('theme_userreview node=', $node, false, false);
   global $user;
   $output = '<table class="userreview_view">';
   if ($node->userreview_label) {
@@ -648,6 +640,7 @@ function theme_userreview_voting_results($avg_vote, $count_votes) {
   $output .= theme('userreview_vote', $avg_vote);
   $output .= '</td>';
   $output .= '</tr></table>';
+  
   return $output;
 }
 
@@ -842,67 +835,4 @@ function userreview_views_default_views() {
   
   return $views;
 }
-
-/**
- * utility function to display variables
- */
-function userreview_debug($title='',$mixed = null, $watchdog = true, $returnstring=false) {
-  if ($watchdog || $returnstring) {
-    ob_start();
-  }
-  echo '<h2>'.$title.'</h2>';
-  if (is_array($mixed)) {
-    userreview_print_array($mixed);
-  } else {
-    var_dump($mixed);
-  }
-  echo '<hr>';
-  if ($watchdog) {
-    $out1 = ob_get_contents();
-    ob_end_clean();
-    watchdog('content', $out1);
-  } else if($returnstring) {
-    $out1 = ob_get_contents();
-    ob_end_clean();
-    return $out1;
-  }
-  return null;
-}
-if(!$GLOBALS['userreview_print_array']) {
-    $GLOBALS['userreview_print_array']=true;
-function userreview_print_array($a,$btag='',$etag='') {
-    if(is_array($a)) {
-    printf('<table cellpadding=0 cellspacing=0>');
-    while(list($one,$two)=each($a)) {
-    printf('\n<tr valign=baseline><td>$btag$one$etag</td><td>'.
-    ' $btag=>$etag</td>'.
-    '<td align=right> %s</td></tr>\n'
-    ,userreview_sprint_array($two,$btag,$etag));
-    }
-    printf("</table>");
-    } 
-    else {
-    printf("%s%s%s",$btag,$a,$etag);
-    } 
-    }
-    
-    
-    function userreview_sprint_array($a,$btag="",$etag="") {
-    if(is_array($a)) {
-    $out=sprintf("<table cellpadding=0 cellspacing=0>");
-    while(list($one,$two)=each($a)) {
-    $out .= sprintf("\n<tr valign=baseline><td>$btag$one$etag</td><td>".
-    " $btag=>$etag</td>".
-    "<td align=right> %s</td></tr>\n"
-    ,userreview_sprint_array($two,$btag,$etag));
-    }
-    $out .= "</table>";
-    return $out;
-    }
-    else {
-    return sprintf("%s%s%s",$btag,$a,$etag);
-    }
-    }
-    }
-
 ?>
