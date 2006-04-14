@@ -2,21 +2,8 @@
 }
 /* the table containing userreview */
 .userreview_view {
-    //width: 100%;
-    background-color: #F4F4F4;
-    border: 1px solid #000000;
     margin: 0;
     padding: 0em .5em 0em .5em;
-}
-
-/* the header bar over a review */
-.userreview_view th {
-    //width: 100%;
-    background-color: #C4D3DB;
-    font-weight: bold;
-    text-align: left;
-    border: 0;
-    padding-left: 0.5em;
 }
 
 /* the table containing a userreview (in teaser mode) */
@@ -41,18 +28,16 @@
 
 /* the vote number */
 .userreview_review_number {
-    /* display:block; */
     text-align: center;
     font-size: 2.2em;
     background-color: #F4F4F4;
-    padding: 0em 0em -.35em 0em;
+    padding: 0em 0em 0em 0em;
     margin: 0em 0em 0em 0em;
     border: 2px solid #000000;
 }
 
 /* the vote caption */
 .userreview_review_number_caption {
-    /* display: block; */
     font-size: 0.8em;
     text-align: center;
     margin: 0;
@@ -85,7 +70,7 @@ table.userreview_selector_table {
 
 /* the td element containing each vote option, within the vote selector form */
 td.userreview_vote_option_container {
-vertical-align:middle;
+  vertical-align:middle;
 }
 .userreview_vote_option_container a:hover{
     text-decoration: none;
@@ -111,9 +96,19 @@ a.userreview_vote_option_hover {
   font-size: 1.2em;
 }
 .userreview_vote_selected {
+  border: 2px solid #000000;
+  background-color: #FF33FF;
   color: #000000;
-  font-size: 2.3em;
+  text-decoration: none;
+  cursor: pointer;
+  margin-right: 0.1em;
+  padding: 0em .2em 0em .2em;
+  font-size: 1.2em;
 }
+/*
+color: #000000;
+  font-size: 2.3em;
+  */
 a.userreview_vote_selected {
   color: #000000;
   text-decoration: none;
@@ -121,26 +116,6 @@ a.userreview_vote_selected {
 a.userreview_vote_selected:hover {
   color: #000000;
   text-decoration: none;
-}
-
-.userreview_included_form {
-   border: 1px solid #000000;
-   background-color: #F4F4F4;
-}
-
-.userreview_included_form h2{
-   width: 100%
-   background-color: #F4F4F4;
-   padding: 0em 1em 0em 1em;
-   margin: 0em 0em 0em 0em;
-   background-color: #C4D3DB;
-   font-weight: bold;
-   text-align: left;
-}
-
-.userreview_included_form_content{
-   padding: 0em 1em 0em 1em;
-   margin: 0;
 }
 
 /* Reporting voting results */
@@ -160,7 +135,6 @@ padding-left: 1em;
 }
 
 .userreview_voting_result_label {
-    //display: block;
     font-weight: bold;
 }
 
@@ -171,6 +145,3 @@ padding-left: 1em;
 .userreview_byline {
     font-size: 0.8em
 }
-
-//margin: -.2em 0em -.3em 0em;
-    //padding-bottom: -.8em;

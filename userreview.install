@@ -38,3 +38,4 @@ function userreview_install() {
       break;
   }
 }
+?>

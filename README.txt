@@ -12,8 +12,14 @@ It uses the votingapi to handle voting values, and it uses the views module to l
 node.  Since votingapi supporting views module as well, you can generate interesting blocks or pages of 
 top rated nodes of a given type in a given category, etc.
 
+UPDATES
+2006/4/14 - improved layout.  All userreview forms and reviews appear in collapsed field sets.  
+Userreview forms & data is now easily accessible but unobtrusive.  Only average vote for each node still 
+appears uncollapsed.
+
 DEPENDENCIES
-This module works in Drupal 4.7.  It requires the votingapi module and the views module to function.
+This module works in Drupal 4.7.  It requires the votingapi module and the views module to function.  
+Currently only written for MySQL but should be easy to add support for Postgre SQL.
 
 INSTALLATION
 (1) Place the userreview folder in your modules direcotry.  This folder should contain userreview.module, 

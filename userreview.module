@@ -88,9 +88,35 @@ function userreview_menu($may_cache) {
  */
 function userreview_settings() {
   $form = array();
+  
+  $form['userreview_form_title'] = array(
+    '#type' => 'textfield', 
+    '#default_value' => variable_get('userreview_form_title',t('Share your opinion!')), 
+    '#title' => t('Title for the user review form'),
+    '#description' => t('This is shown before the user review form.  %node_type is replaced with the node type being reviewed, and %node_title is replaced with the title of the node being reviewed.  Example: Please rate %node_type %node_title!')
+  );
+  
+  $form['userreview_vote_description'] = array(
+    '#type' => 'textarea', 
+    '#default_value' => variable_get('userreview_vote_description',t('Select a value from 0 (worst) to 10 (best)')), 
+    '#title' => 'Description for vote element',
+    '#description' => t('This is shown after the voting element in the user review form')
+  );
+  $form['userreview_vote_title'] = array(
+    '#type' => 'textfield', 
+    '#default_value' => variable_get('userreview_vote_title',t('Your vote')), 
+    '#title' => t('Title for the vote selector element'),
+    '#description' => t('This is shown before the voting element in the user review form.  Example: Select a number from 0 to 10.')
+  );
+  $form['userreview_review_list_title'] = array(
+    '#type' => 'textfield', 
+    '#default_value' => variable_get('userreview_review_list_title', t('User Reviews')), 
+    '#title' => t('Title for the list of user reviews displayed'),
+    '#description' => t('This is shown before the listing of user reviews.')
+  );
   $form['userreview_currentuser_label'] = array(
     '#type' => 'textfield', 
-    '#default_value' => variable_get('userreview_currentuser_label',t('Your review of %node_type: %node_title')), 
+    '#default_value' => variable_get('userreview_currentuser_label',t('Your Review')), 
     '#title' => t('Title of the current user\'s review when viewing the reviewed node'),
     '#description' => t('This is shown before the current user\'s review, when displayin the reviewed node\s page.  %node_type is replaced with the node type being reviewed, and %node_title is replaced with the title of the node being reviewed')
   );
@@ -99,25 +125,6 @@ function userreview_settings() {
     '#default_value' => variable_get('userreview_otheruser_label',t('Review of %node_type: %node_title by %user_name')), 
     '#title' => t('Title for displaying a user\'s review of a particular node'),
     '#description' => t('This is shown when viewing a user review in full page mode, of the non-current user.  %node_type is replaced with the node type being reviewed, and %node_title is replaced with the title of the node being reviewed, and %user_name is replaced with the user\'s name.  Example: Review of %node_type: %node_title by %user_name')
-  );
-  $form['userreview_form_title'] = array(
-    '#type' => 'textfield', 
-    '#default_value' => variable_get('userreview_form_title',t('Share your opinion')), 
-    '#title' => t('Title for the user review form'),
-    '#description' => t('This is shown before the user review form.  %node_type is replaced with the node type being reviewed, and %node_title is replaced with the title of the node being reviewed.  Example: Please rate %node_type %node_title!')
-  );
-  $form['userreview_vote_title'] = array(
-    '#type' => 'textfield', 
-    '#default_value' => variable_get('userreview_vote_title',t('Your vote')), 
-    '#title' => t('Title for the vote selector element'),
-    '#description' => t('This is shown before the voting element in the user review form.  Example: Select a number from 0 to 10.')
-  );
-  
-  $form['userreview_vote_description'] = array(
-    '#type' => 'textarea', 
-    '#default_value' => variable_get('userreview_vote_description',t('Select a value from 0 (worst) to 10 (best)')), 
-    '#title' => 'Description for vote element',
-    '#description' => t('This is shown after the voting element in the user review form')
   );
   $form['userreview_vote_number_caption'] = array(
     '#type' => 'textfield',
@@ -214,7 +221,6 @@ function userreview_form(&$node) {
   $add_elements['content_type'] = array('#type' => 'value', '#value' => $node->content_type);
   $add_elements['vote_tag'] = array('#type' => 'value', '#value' => $node->vote_tag);
   
-  //return array_merge($add_elements, filter_form($node->format));
   $add_elements['format'] = filter_form($node->format);
   return $add_elements;
 }
@@ -245,7 +251,7 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         $userreviewnode = get_userreview_node($node, $user->uid);
         //if a review exists by this user, show it...
         if ($userreviewnode) {
-          $node->userreview->current_user_review = theme('userreview', $userreviewnode);
+          $node->userreview->current_user_review = theme('userreview', $userreviewnode, true, true);
           $node->body .= $node->userreview->current_user_review;
           
         //...otherwise show the form to create a user review
@@ -257,24 +263,40 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           $userreviewnode->type = 'userreview';
           $userreviewnode->uid = $user->uid;
           $userreviewnode->name = $user->name;
-          $display_title = variable_get('userreview_form_title', '');
-          $display_title = str_replace('%node_type', node_get_name($node->type), $display_title);
-          $display_title = str_replace('%node_title', $node->title, $display_title);
-          //$node->body .= theme('userreview_form', node_form($userreviewnode), $display_title);
+          $display_title = get_userreview_form_title();
           $node->userreview->review_form = theme('userreview_included_form', $display_title, node_form($userreviewnode));
           $node->body .= $node->userreview->review_form;
         }
         
         //next, show a list of user reviews if any reviews
-        if ($count_votes->value > 0) {
-          $node->userreview->review_list = '<br/><h2 class="title">' . t('Reviews') . '</h2>';
-          $view = views_get_view('userreview');
-          $node->userreview->review_list .= views_build_view('embed', $view, array($node->nid), true, variable_get('userreview_display_num',10));
+        if ($count_votes->value > 0) {          
+          $node->userreview->review_list .= theme('userreview_list', $node);
           $node->body .= $node->userreview->review_list;
         }
       }
       break; 
   }
+}
+/**
+ * Themes the list of userreviews displayed after a node
+ */
+function theme_userreview_list($node, $collapsible = true, $collapsed = true) {
+  $view = views_get_view('userreview');
+  $o = views_build_view('embed', $view, array($node->nid), true, variable_get('userreview_display_num',10));
+  $display = array(
+    '#collapsible' => $collapsible,
+    '#collapsed' => $collapsed,
+    '#title' => variable_get('userreview_review_list_title', t('User Reviews')),
+    '#children' => $o
+  );
+  return theme('fieldset', $display);
+}
+
+function get_userreview_form_title() {
+  $display_title = variable_get('userreview_form_title', t('Share your opinion!'));
+  $display_title = str_replace('%node_type', node_get_name($node->type), $display_title);
+  $display_title = str_replace('%node_title', $node->title, $display_title);
+  return $display_title; 
 }
 
 /**
@@ -288,11 +310,10 @@ function get_userreview_node($content_node, $uid = 0, $default = false) {
   $result = db_fetch_object(db_query($sql, $content_node->nid, $uid));
   if (!$result) return $default;
   $userreview_node = node_load($result->nid);
-  //$userreview_node = node_invoke($result,'load');
   if ($uid == $user->uid) {
-    $display_title = variable_get('userreview_currentuser_label', '');
+    $display_title = variable_get('userreview_currentuser_label', t('Your Review'));
   } else {
-    $display_title = variable_get('userreview_otheruser_label', '');
+    $display_title = variable_get('userreview_otheruser_label', t('Review of %node_type: %node_title by %user_name'));
   }
   $display_title = str_replace('%node_type', node_get_name($content_node->type), $display_title);
   $display_title = str_replace('%node_title', $content_node->title, $display_title);
@@ -315,8 +336,8 @@ function userreview_vote_selector($vote_value, $default='') {
   $vote_value = (string)$vote_value;
   $selector = array(
     '#type' => 'userreview_number_selector', 
-    '#title' => variable_get('userreview_vote_title',''),
-    '#description' => variable_get('userreview_vote_description',''), 
+    '#title' => variable_get('userreview_vote_title',t('Your vote')),
+    '#description' => variable_get('userreview_vote_description',t('Select a value from 0 (worst) to 10 (best)')), 
     '#default_value' => $vote_value,
     '#weight' => -5);
   return $selector;
@@ -371,17 +392,16 @@ function theme_userreview_number_selector($element) {
       $cssclass = $userreview_selected_css_class;
     }
     $click_js = "userreview_select_vote(this, '$element_number_base', '$userreview_option_css_class', '$userreview_selected_css_class', '$element_form_id', '$val');";
-    $extra_html .= '<td class="'.$userreview_option_css_class.'_container"><a ';//
+    $extra_html .= '<td class="'.$userreview_option_css_class.'_container"><a ';
     $extra_html .= 'id="' . $element_number_base . $val . '" ';
     $extra_html .= 'class="' . $cssclass . '" ';
     $extra_html .= 'onmouseover="'.$classchange_js.'" ';
     $extra_html .= 'onmouseout="'.$classchangeback_js.'" ';
     $extra_html .= 'onclick="'.$click_js.'">';
     $extra_html .= $display;
-    $extra_html .= '</a></td>';//
+    $extra_html .= '</a></td>';
   }
   $extra_html .= '</tr></table>';
-  //$element_html .= "<input type='hidden' name='edit[" . $element_name . "]' value='" . $element["#default_value"] . "'>";
   return theme('form_element', $element['#title'], $element_html . $extra_html, $element['#description'], $element_form_id, $element['#required'], form_get_error($element));
 }
 
@@ -399,8 +419,6 @@ function userreview_insert($node) {
 
   //store the vote using votingapi
   $vobj = new stdClass();
-  //$vobj->value = ($node->vote_value * 10);
-  //$vote_value = (int)$_REQUEST['edit']['vote_value'];
   $vobj->value = $node->vote_value;
   $vobj->value_type = VOTINGAPI_VALUE_TYPE_PERCENT;
   $vobj->tag = $node->vote_tag;
@@ -520,12 +538,10 @@ function userreview_form_alter($form_id, &$form) {
 /**
  * Themes a userreview node for full (page) view
  */
-function theme_userreview($node) {
+function theme_userreview($node, $collapsible = true, $collapsed = true) {
   global $user;
   $output = '<table class="userreview_view">';
-  if ($node->userreview_label) {
-    $output .= '<th width="100%" colspan="2">' . $node->userreview_label . '</th>';
-  }
+
   $output .= '<tr><td align="left" class="userreview_review_vote_container">';
   $output .= theme('userreview_vote', $node->vote_value);
   $output .= '</td><td>';
@@ -546,7 +562,13 @@ function theme_userreview($node) {
     $output .= '</span>';
   }
   $output .= '</td></tr></table>';
-  return $output;
+  $display = array(
+      '#collapsible' => $collapsible,
+      '#collapsed' => $collapsed,
+      '#title' => $node->userreview_label,
+      '#children' => $output
+    );
+  return theme('fieldset', $display);
 }
 
 /**
@@ -589,10 +611,15 @@ function theme_userreview_teaser($node) {
  * gray background to set it apart from the reviewed node.
  */
 function theme_userreview_included_form($title, $form_html) {
-    $output = '<div class="userreview_included_form">';
-    $output .= '<h2>' . $title . '</h2>';
-    $output .= '<div class="userreview_included_form_content">' . $form_html;
-    $output .= '</div></div>';
+    $output = '';
+    $display = array(
+      '#collapsible' => true,
+      '#collapsed' => true,
+      '#title' => $title,
+      '#children' => $form_html
+    );
+    
+    $output .= theme('fieldset', $display);
     return $output;
 }
 
