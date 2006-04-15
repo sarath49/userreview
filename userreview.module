@@ -651,18 +651,14 @@ function theme_userreview_vote($vote_value) {
 function theme_userreview_voting_results($avg_vote, $count_votes) {
   $output = '';
   $output .= '<table class="userreview_voting_result"><tr><td>';
-  $output .= '<h2 class="title">';
-  $output .= t('Average vote ');
-  $output .= '</h2>';
-  $output .= '<span class="userreview_voting_result_label_minor">';
-  $output .= t(' based on ');
+  $output .= '<span class="userreview_voting_result_title">';
+  $output .= t('Average vote');
   $output .= '</span>';
+  $output .= t(' based on ');
   $output .= '<span class="userreview_count_votes">';
   $output .= $count_votes;
   $output .= '</span>';
-  $output .= '<span class="userreview_voting_result_label_minor">';
   $output .= format_plural($count_votes, t(' review.'), t(' reviews.'));
-  $output .= '</span>';
   $output .= '</td><td class="userreview_average_vote">';
   $output .= theme('userreview_vote', $avg_vote);
   $output .= '</td>';

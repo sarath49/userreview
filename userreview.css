@@ -29,7 +29,7 @@
 /* the vote number */
 .userreview_review_number {
     text-align: center;
-    font-size: 2.2em;
+    font-size: 1.6em;
     background-color: #F4F4F4;
     padding: 0em 0em 0em 0em;
     margin: 0em 0em 0em 0em;
@@ -38,7 +38,7 @@
 
 /* the vote caption */
 .userreview_review_number_caption {
-    font-size: 0.8em;
+    font-size: 0.7em;
     text-align: center;
     margin: 0;
     padding: 0;
@@ -121,25 +121,22 @@ a.userreview_vote_selected:hover {
 /* Reporting voting results */
 .userreview_voting_result {
     vertical-align:middle;
-    margin-bottom: 0.5em;
+    margin-top: 0.6em;
 }
 
 .userreview_average_vote {
-vertical-align:middle;
-text-align: center;
-padding-left: 1em;
+    vertical-align:middle;
+    text-align: center;
+    padding-left: 1em;
 }
 
-.userreview_count_votes {
-
+.userreview_count_votes td {
+  vertical-align:middle;
 }
 
-.userreview_voting_result_label {
+.userreview_voting_result_title {
+    display: block;
     font-weight: bold;
-}
-
-.userreview_voting_result_label_minor {
-
 }
 
 .userreview_byline {
