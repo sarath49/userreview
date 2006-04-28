@@ -254,8 +254,8 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           $node->userreview->current_user_review = theme('userreview', $userreviewnode, true, true);
           $node->body .= $node->userreview->current_user_review;
           
-        //...otherwise show the form to create a user review
-        } else if(user_access('create user reviews')) { 
+        //...otherwise show the form to create a user review IF we are not printing the page (print module)
+        } else if(user_access('create user reviews') && !$node->printing) { 
           $userreviewnode = new StdClass();
           $userreviewnode->content_id = $node->nid;
           $userreviewnode->vote_tag = $node->type;
