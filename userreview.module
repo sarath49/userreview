@@ -1,4 +1,6 @@
 <?php
+/* $Id$ */
+
 /*
  * userreview.module
  * First released March 12, 2006
@@ -239,9 +241,9 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       if ($page) {
         
         //first, show the average vote
-        $count_votes = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, $node->type, 'count');
+        $count_votes = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, 'userreview:'.$node->type, 'count');
         if ($count_votes > 0) {
-          $avg_vote = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, $node->type, 'average');
+          $avg_vote = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, 'userreview:'.$node->type, 'average');
           $node->userreview->average_vote = theme('userreview_voting_results', $avg_vote->value, $count_votes->value);
           
           $node->body .= $node->userreview->average_vote;
@@ -258,7 +260,7 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         } else if(user_access('create user reviews') && !$node->printing) { 
           $userreviewnode = new StdClass();
           $userreviewnode->content_id = $node->nid;
-          $userreviewnode->vote_tag = $node->type;
+          $userreviewnode->vote_tag = 'userreview:'.$node->type;
           $userreviewnode->content_type = 'node';
           $userreviewnode->type = 'userreview';
           $userreviewnode->uid = $user->uid;
@@ -465,8 +467,9 @@ function userreview_delete($node) {
   $vote = new stdClass();
   $vote->vote_id = $node->vote_id;
   $vote->content_id = $node->content_id;
-  $vote->content_type = $node->content_type;
+  $vote->content_type = 'node';
   votingapi_delete_vote($vote);
+  votingapi_recalculate_results($vote->content_id, $vote->content_id);
 }
 
 /**
@@ -601,7 +604,6 @@ function theme_userreview_teaser($node) {
   }
   
   $output .= '</td></tr></table>';
-  $output .= '<hr class="userreview"/>';
   return $output;
 }
 
@@ -708,7 +710,7 @@ function userreview_views_tables() {
       ),
     ),
     'sorts' => array(
-      'vote_tag' => array('name' => 'Userreview: Vote Type'),
+      'vote_tag' => array('name' => 'Userreview: Review Type'),
       'vote_value' => array('name' => 'Userreview: Vote Value'),
     ),
   );
@@ -759,16 +761,21 @@ function theme_views_view_userreview($view, $type, $nodes) {
   
   if ($type == 'list' || $type == 'embed') {
      
-    foreach ($nodes as $node) {        
-        //map views fields to node fields
-        $node->title = $node->node_title;
-        $node->changed = $node->node_changed;
-        $node->uid = $node->users_uid;
-        $node->name = $node->users_name;
-        $node->review_text = $node->userreview_review_text;
-        $node->vote_value = $node->userreview_vote_value;
+    $counter = 0;
+    foreach ($nodes as $node) {
+      if ($counter > 0) {
+        $output .= '<hr class="userreview"/>';
+      }
+      $counter++;       
+      //map views fields to node fields
+      $node->title = $node->node_title;
+      $node->changed = $node->node_changed;
+      $node->uid = $node->users_uid;
+      $node->name = $node->users_name;
+      $node->review_text = $node->userreview_review_text;
+      $node->vote_value = $node->userreview_vote_value;
 
-        $output .= theme('userreview_teaser', $node);
+      $output .= theme('userreview_teaser', $node);
       }
   }
     if ($output) {

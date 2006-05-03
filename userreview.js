@@ -1,3 +1,5 @@
+/* $Id$ */
+
 function userreview_change_class(idPrefix, newClass) {
     _userreview_change_class = true;
     for (var i=0; i<11; i++) {

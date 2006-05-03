@@ -1,4 +1,7 @@
 <?php
+
+/* $Id$ */
+
 function userreview_install() {
 	drupal_set_message('Installing userreview');
   switch ($GLOBALS['db_type']) {

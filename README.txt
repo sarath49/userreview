@@ -13,6 +13,12 @@ node.  Since votingapi supporting views module as well, you can generate interes
 top rated nodes of a given type in a given category, etc.
 
 UPDATES
+2006/5/3 - updated to work with latest changes to votingapi module.
+Please be sure to also update to the latest release of votingapi.
+Also changed the tagging to (a) comply better with votingapi standards and
+and (b) better identify userreview votes as coming from userreview, permitting
+overlapping voting systems.
+
 2006/4/14 - improved layout.  All userreview forms and reviews appear in collapsed field sets.  
 Userreview forms & data is now easily accessible but unobtrusive.  Only average vote for each node still 
 appears uncollapsed.
