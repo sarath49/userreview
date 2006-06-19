@@ -469,7 +469,7 @@ function userreview_delete($node) {
   $vote->content_id = $node->content_id;
   $vote->content_type = 'node';
   votingapi_delete_vote($vote);
-  votingapi_recalculate_results($vote->content_id, $vote->content_id);
+  votingapi_recalculate_results($vote->content_type, $vote->content_id);
 }
 
 /**
