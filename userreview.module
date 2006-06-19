@@ -265,7 +265,7 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           $userreviewnode->type = 'userreview';
           $userreviewnode->uid = $user->uid;
           $userreviewnode->name = $user->name;
-          $display_title = get_userreview_form_title();
+          $display_title = get_userreview_form_title($node);
           $node->userreview->review_form = theme('userreview_included_form', $display_title, node_form($userreviewnode));
           $node->body .= $node->userreview->review_form;
         }
@@ -294,10 +294,18 @@ function theme_userreview_list($node, $collapsible = true, $collapsed = true) {
   return theme('fieldset', $display);
 }
 
-function get_userreview_form_title() {
+function get_userreview_form_title($node) {
   $display_title = variable_get('userreview_form_title', t('Share your opinion!'));
-  $display_title = str_replace('%node_type', node_get_name($node->type), $display_title);
+  $node_translation_terms = array(
+    '%node_type' => node_get_name($node->type),
+    '%node_title' => $node->title,
+  );
+  $display_title = t($display_title, $node_translation_terms);
+  /*
+  $display_title = str_replace('%node_type', node_get_name($node->type),
+  $display_title);
   $display_title = str_replace('%node_title', $node->title, $display_title);
+  */
   return $display_title; 
 }
 
