@@ -135,6 +135,27 @@ function userreview_settings() {
     '#title' => 'Caption under vote value',
     '#description' => t('This is shown under each vote, when showing user reviews.')
   );
+  $form['userreview_show_average_vote_in_teaser'] = array(
+    '#type' => 'radios',
+    '#title' => t('Show average vote in teaser'),
+    '#description' => t('When showing a teaser of a reviewed node, should the average vote be shown?'),
+    '#default_value' => variable_get('userreview_show_average_vote_in_teaser', true),
+    '#options' => array(false => t('No'), true => t('Yes')),
+  );
+  $form['userreview_list_collapsible'] = array(
+    '#type' => 'radios',
+    '#title' => t('List of user reviews is in collapsible field set'),
+    '#description' => t('When showing a reviewed node (in full page view), should the list of user reviews be in a collapsible field set?'),
+    '#default_value' => variable_get('userreview_list_collapsible', true),
+    '#options' => array(false => t('No'), true => t('Yes')),
+  );
+  $form['userreview_list_collapsed'] = array(
+    '#type' => 'radios',
+    '#title' => t('List of user reviews is collapsed field set'),
+    '#description' => t('When showing a reviewed node (in full page view), should the list of user reviews be in a collapsed field set?'),
+    '#default_value' => variable_get('userreview_list_collapsed', true),
+    '#options' => array(false => t('No'), true => t('Yes')),
+  );
   $form['userreview_default_vote'] = array(
     '#type' => 'textfield', 
     '#default_value' => variable_get('userreview_default_vote','5'), 
@@ -272,8 +293,19 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         
         //next, show a list of user reviews if any reviews
         if ($count_votes->value > 0) {          
-          $node->userreview->review_list .= theme('userreview_list', $node);
+          $node->userreview->review_list .= theme('userreview_list', $node, variable_get('userreview_list_collapsible', true), variable_get('userreview_list_collapsed', true));
           $node->body .= $node->userreview->review_list;
+        }
+      } else {//teaser
+        if (variable_get('userreview_show_average_vote_in_teaser', true)) {
+          //show the average vote
+          $count_votes = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, 'userreview:'.$node->type, 'count');
+          if ($count_votes > 0) {
+            $avg_vote = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, 'userreview:'.$node->type, 'average');
+            $node->userreview->average_vote = theme('userreview_voting_results', $avg_vote->value, $count_votes->value);
+            
+            $node->teaser .= $node->userreview->average_vote;
+          }
         }
       }
       break; 
