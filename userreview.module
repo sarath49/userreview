@@ -561,7 +561,7 @@ function userreview_view(&$node, $teaser = FALSE, $page = FALSE) {
   if ($teaser) {
     $node->teaser = theme('userreview_teaser', $node);
   } else {
-    $node->body = theme('userreview', $node);
+    $node->body = theme('userreview_teaser', $node);
   }
   
   //remove the title, since the title is shown in the above theming
