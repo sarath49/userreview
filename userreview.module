@@ -142,16 +142,30 @@ function userreview_settings() {
     '#default_value' => variable_get('userreview_show_average_vote_in_teaser', true),
     '#options' => array(false => t('No'), true => t('Yes')),
   );
+  $form['userreview_form_collapsible'] = array(
+    '#type' => 'radios',
+    '#title' => t('User Review form is in a collapsible field set'),
+    '#description' => t('When showing a reviewable node (in full page view), should the user review form be in a collapsible field set?'),
+    '#default_value' => variable_get('userreview_form_collapsible', true),
+    '#options' => array(false => t('No'), true => t('Yes')),
+  );
+  $form['userreview_form_collapsed'] = array(
+    '#type' => 'radios',
+    '#title' => t('User review form is in a collapsed field set'),
+    '#description' => t('When showing a reviewable node (in full page view), should the user review form be in a collapsed field set?'),
+    '#default_value' => variable_get('userreview_form_collapsed', true),
+    '#options' => array(false => t('No'), true => t('Yes')),
+  );
   $form['userreview_list_collapsible'] = array(
     '#type' => 'radios',
-    '#title' => t('List of user reviews is in collapsible field set'),
+    '#title' => t('List of user reviews is in a collapsible field set'),
     '#description' => t('When showing a reviewed node (in full page view), should the list of user reviews be in a collapsible field set?'),
     '#default_value' => variable_get('userreview_list_collapsible', true),
     '#options' => array(false => t('No'), true => t('Yes')),
   );
   $form['userreview_list_collapsed'] = array(
     '#type' => 'radios',
-    '#title' => t('List of user reviews is collapsed field set'),
+    '#title' => t('List of user reviews is in a collapsed field set'),
     '#description' => t('When showing a reviewed node (in full page view), should the list of user reviews be in a collapsed field set?'),
     '#default_value' => variable_get('userreview_list_collapsed', true),
     '#options' => array(false => t('No'), true => t('Yes')),
@@ -655,8 +669,8 @@ function theme_userreview_teaser($node) {
 function theme_userreview_included_form($title, $form_html) {
     $output = '';
     $display = array(
-      '#collapsible' => true,
-      '#collapsed' => true,
+      '#collapsible' => variable_get('userreview_form_collapsible', true),
+      '#collapsed' => variable_get('userreview_form_collapsed', true),
       '#title' => $title,
       '#children' => $form_html
     );
