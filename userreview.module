@@ -587,7 +587,9 @@ function userreview_view(&$node, $teaser = FALSE, $page = FALSE) {
  * removed the "preview" button.
  */
 function userreview_form_alter($form_id, &$form) {
-  if ($form_id == 'userreview_node_form') {
+  $op = isset($_POST['op']) ? $_POST['op'] : '';
+  if ($form_id == 'userreview_node_form' && 
+    !(variable_get('node_preview', 0) && (form_get_errors() || $op != t('Preview')))) {
     unset($form['preview']);
   }
 }
@@ -667,10 +669,11 @@ function theme_userreview_teaser($node) {
  * gray background to set it apart from the reviewed node.
  */
 function theme_userreview_included_form($title, $form_html) {
+    $op = isset($_POST['op']) ? $_POST['op'] : '';
     $output = '';
     $display = array(
       '#collapsible' => variable_get('userreview_form_collapsible', true),
-      '#collapsed' => variable_get('userreview_form_collapsed', true),
+      '#collapsed' => variable_get('userreview_form_collapsed', true) && $op != t('Preview'),
       '#title' => $title,
       '#children' => $form_html
     );
