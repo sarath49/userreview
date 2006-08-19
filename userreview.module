@@ -49,6 +49,8 @@ function userreview_access($op, $node) {
   if ($op == 'update' || $op == 'delete') {
     if (user_access('administer user reviews') || (user_access('edit own user reviews') && ($user->uid == $node->uid))) {
       return TRUE;
+    } else {
+      return FALSE;
     }
   }
 }
@@ -485,6 +487,8 @@ function userreview_insert($node) {
   $next_id = db_next_id('userreview');
   db_query("INSERT INTO {userreview} (nid, content_id, content_type, vote_id, vote_value, vote_tag, uid, review_text) VALUES (%d, %d, '%s', %d, %d, '%s', %d, '%s')", $node->nid, $node->content_id, $node->content_type, $inserted_vobj->vote_id, $node->vote_value, $node->vote_tag, $user->uid, $node->review_text);
   
+  //forward to the reviewed node
+  $_REQUEST['destination'] = 'node/' . $node->content_id;
 }
 
 /**
@@ -509,6 +513,9 @@ function userreview_update($node) {
   $vote->value_type = VOTINGAPI_VALUE_TYPE_PERCENT;
   $vote->tag = $node->vote_tag;
   votingapi_set_vote($node->content_type, $node->content_id, $vote, $user->uid);
+  
+  //forward to the reviewed node
+  $_REQUEST['destination'] = 'node/' . $node->content_id;
 }
 
 /**
@@ -562,14 +569,16 @@ function userreview_set_breadcrumb($node) {
 function userreview_view(&$node, $teaser = FALSE, $page = FALSE) {
   global $user;
   if ($page) {
-    if ($node->uid == $user->uid) {
+    /*
+		if ($node->uid == $user->uid) {
       //if we are viewing the current user's userreview node, redirect to the reviewed node.
       //Thus, when a user has submitted or updated her review, she will then see the reviewed node as the next page.
       drupal_goto("node/$node->content_id");
     } else {
       userreview_set_breadcrumb($node);
     }
-    
+    */
+    userreview_set_breadcrumb($node);
   }
   $node = node_prepare($node, $teaser);
   if ($teaser) {
