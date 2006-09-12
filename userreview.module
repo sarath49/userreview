@@ -354,7 +354,7 @@ function get_userreview_form_title($node) {
   $display_title);
   $display_title = str_replace('%node_title', $node->title, $display_title);
   */
-  return $display_title; 
+  return check_plain($display_title); 
 }
 
 /**
@@ -380,7 +380,7 @@ function get_userreview_node($content_node, $uid = 0, $default = false) {
     $reviewer_obj = user_load($user_criteria);
     $display_title = str_replace('%user_name', $reviewer_obj->name, $display_title);
   }
-  $userreview_node->userreview_label = $display_title;
+  $userreview_node->userreview_label = check_plain($display_title);
   return $userreview_node;
 }
 
@@ -614,11 +614,11 @@ function theme_userreview($node, $collapsible = true, $collapsed = true) {
   $output .= theme('userreview_vote', $node->vote_value);
   $output .= '</td><td>';
   if ($node->title) {
-    $output .= '<div class="userreview_review_title">' . $node->title . '</div>';
+    $output .= '<div class="userreview_review_title">' . check_plain($node->title) . '</div>';
   }
    
   if ($node->review_text) {
-    $output .= '<div class="userreview_review_body">' . $node->review_text . '</div>';
+    $output .= '<div class="userreview_review_body">' . check_markup($node->review_text) . '</div>';
   }
   $output .= '<br/><span class="userreview_byline">';
   $output .= t('by '). l($node->name, 'user/' . $node->uid);
@@ -651,11 +651,11 @@ function theme_userreview_teaser($node) {
   $output .= theme('userreview_vote', $node->vote_value);
   $output .= '</td><td>';
   if ($node->title) {
-    $output .= '<div class="userreview_review_title">' . $node->title . '</div>';
+    $output .= '<div class="userreview_review_title">' . check_plain($node->title) . '</div>';
   }
    
   if ($node->review_text) {
-    $output .= '<div class="userreview_review_body">' . $node->review_text . '</div>';
+    $output .= '<div class="userreview_review_body">' . check_markup($node->review_text) . '</div>';
   }
   $output .= '<br/><span class="userreview_byline">';
   $output .= t('by '). l($node->name, 'user/'. $node->uid);
@@ -683,7 +683,7 @@ function theme_userreview_included_form($title, $form_html) {
     $display = array(
       '#collapsible' => variable_get('userreview_form_collapsible', true),
       '#collapsed' => variable_get('userreview_form_collapsed', true) && $op != t('Preview'),
-      '#title' => $title,
+      '#title' => check_plain($title),
       '#children' => $form_html
     );
     
@@ -834,11 +834,11 @@ function theme_views_view_userreview($view, $type, $nodes) {
       }
       $counter++;       
       //map views fields to node fields
-      $node->title = $node->node_title;
+      $node->title = check_plain($node->node_title);
       $node->changed = $node->node_changed;
       $node->uid = $node->users_uid;
       $node->name = $node->users_name;
-      $node->review_text = $node->userreview_review_text;
+      $node->review_text = check_markup($node->userreview_review_text);
       $node->vote_value = $node->userreview_vote_value;
 
       $output .= theme('userreview_teaser', $node);
