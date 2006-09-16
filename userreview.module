@@ -925,6 +925,13 @@ function userreview_views_default_views() {
     ),
   );
   $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'status',
+      'operator' => '=',
+      'options' => '',
+      'value' => '1',
+    ),
   );
   $view->requires = array(node, userreview, users);
   $views[$view->name] = $view;
