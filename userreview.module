@@ -13,14 +13,13 @@
  * userreview@gerd-riesselmann.net
  */
 
+define ('USERREVIEW_VOTINGAPI_VALUE_TYPE', 'percent');
+
 /**
  * Implementation of hook_help().
  */
 function userreview_help($section) {
   switch ($section) {
-    case 'admin/modules#description':
-      // This description is shown in the listing at admin/modules.
-      return t('Defines a user review content type. Requires votingapi module and views module.');
     case 'admin/help#userreview':
       return t('The userreview content type is a node, which is attached to another node.  It has a 0 to 10 voting scale.  You set a number of configuration options at ') . l('admin/settings/userreview', 'admin/settings/userreview') . t('.  Here, you can set which node types are reviewable, how many reviews to display beneath the reviewed node per page, and others.') . '<br/><br/>' . t('This module requires views module and the votingapi module.  Using views, it is easy to create blocks or pages which display top rated nodes of a given type, for example.') . '<br/><br/>' . t('This module was designed for Drupal version 4.7.');
      case 'node/add#userreview':
@@ -36,7 +35,13 @@ function userreview_help($section) {
  * and hook_node_types() from 4.6.
  */
 function userreview_node_info() {
-  return array('userreview' => array('name' => t('review'), 'base' => 'userreview'));
+  return array(
+    'userreview' => array(
+      'name' => t('review'), 
+      'module' => 'userreview',
+      'description' => t('The userreview content type is a node, which is attached to another node.  It has a 0 to 10 voting scale.  You set a number of configuration options at ') . l('admin/settings/userreview', 'admin/settings/userreview') . t('.  Here, you can set which node types are reviewable, how many reviews to display beneath the reviewed node per page, and others.') . '<br/><br/>' . t('This module requires views module and the votingapi module.  Using views, it is easy to create blocks or pages which display top rated nodes of a given type, for example.'),      
+    )
+  );
 }
 
 /**
@@ -76,7 +81,7 @@ function userreview_perm() {
 function userreview_menu($may_cache) {
   $items = array();
   if (!$may_cache) {
-    theme_add_style(drupal_get_path('module', 'userreview') .'/userreview.css');
+    drupal_add_css(drupal_get_path('module', 'userreview') . '/userreview.css');
   } else {
     $items[] = array(
       'path'     => 'userreview/howto',
@@ -86,6 +91,15 @@ function userreview_menu($may_cache) {
       'access'   => true,
       'type'     => MENU_CALLBACK
     );
+    $items[] = array(
+      'path' => 'admin/settings/userreview',
+      'title' => t('Userreview'),
+      'description' => t('Configure userreview behavior and appearance.'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('userreview_admin_settings'),
+      'access' => user_access('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM, // optional
+    );
   }
 
   return $items;
@@ -94,10 +108,10 @@ function userreview_menu($may_cache) {
 /**
  * Define settings for this module.
  */
-function userreview_settings() {
+function userreview_admin_settings() {
   $form = array();
 
-  $node_types = node_get_types();
+  $node_types = node_get_types('names');
   unset($node_types['userreview']);
   $form['userreview_node_types'] = array(
     '#title' => t('Node types to expose user reviewing.'),
@@ -244,7 +258,7 @@ function userreview_settings() {
     '#default_value' => variable_get('userreview_show_link_to_reviewed', false)
   );
     
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
@@ -297,6 +311,7 @@ function userreview_form(&$node) {
   $add_elements['vote_tag'] = array('#type' => 'value', '#value' => $node->vote_tag);
   
   $add_elements['format'] = filter_form($node->format);
+  
   return $add_elements;
 }
 
@@ -321,7 +336,10 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         $teaser && variable_get('userreview_show_count_votes_in_teaser', false)
       ); 
       if ($page) {  
-        $node->body .= $node->userreview->average_vote;
+        $node->content['userreview_average'] = array(
+          '#value' => $node->userreview->average_vote,
+          '#weight' => 8,
+        );
         
         //get the current user's review for this content node
         $userreviewnode = get_userreview_node($node, $user->uid);
@@ -329,7 +347,10 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         if ($userreviewnode) {
           if (variable_get('userreview_show_currentuser_review', true)) {
             $node->userreview->current_user_review = theme('userreview', $userreviewnode, true, true);
-            $node->body .= $node->userreview->current_user_review;
+            $node->content['userreview_current_user_review'] = array(
+              '#value' => $node->userreview->current_user_review,
+              '#weight' => 9,
+            );
           }
           //...otherwise show the form to create a user review IF we are not printing the page (print module)
         } else if(user_access('create user reviews') && !$node->printing) { 
@@ -341,17 +362,27 @@ function userreview_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           $userreviewnode->uid = $user->uid;
           $userreviewnode->name = $user->name;
           $display_title = get_userreview_form_title($node);
-          $node->userreview->review_form = theme('userreview_included_form', $display_title, node_form($userreviewnode));
-          $node->body .= $node->userreview->review_form;
+          $node->userreview->review_form = theme('userreview_included_form', $display_title, drupal_get_form('userreview_node_form', $userreviewnode));
+
+          $node->content['userreview_review_form'] = array(
+            '#value' => $node->userreview->review_form,
+            '#weight' => 9,
+          );
         }
         
         //next, show a list of user reviews if any reviews
         if ($count_votes->value > 0) {          
           $node->userreview->review_list .= theme('userreview_list', $node, variable_get('userreview_list_collapsible', true), variable_get('userreview_list_collapsed', true));
-          $node->body .= $node->userreview->review_list;
+          $node->content['userreview_review_list'] = array(
+            '#value' => $node->userreview->review_list,
+            '#weight' => 10,
+          );
         }
       } else {//teaser
-        $node->teaser .= $node->userreview->average_vote;
+        $node->content['userreview_average'] = array(
+          '#value' => $node->userreview->average_vote,
+          '#weight' => 8,
+        );
       }
       break; 
   }
@@ -373,11 +404,11 @@ function _userreview_nodeapi_view_prepare(&$node, $show_average, $show_count) {
   $count_votes->value = 0;
   if ($show_average || $show_count) {
     //first, show the average vote
-    $count_votes = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, 'userreview:'.$node->type, 'count');
+    $count_votes = votingapi_get_voting_result('node', $node->nid, USERREVIEW_VOTINGAPI_VALUE_TYPE, 'userreview:'.$node->type, 'count');
     $node->userreview->count_votes = $count_votes;
   }
   if ($show_average && $count_votes->value > 0) {
-	  $avg_vote = votingapi_get_voting_result('node', $node->nid, VOTINGAPI_VALUE_TYPE_PERCENT, 'userreview:'.$node->type, 'average');
+	  $avg_vote = votingapi_get_voting_result('node', $node->nid, USERREVIEW_VOTINGAPI_VALUE_TYPE, 'userreview:'.$node->type, 'average');
 	  $node->userreview->average_vote = theme('userreview_voting_results', $avg_vote->value, $count_votes->value);
   }
   return $count_votes;
@@ -407,7 +438,7 @@ function theme_userreview_list($node, $collapsible = true, $collapsed = true) {
 function get_userreview_form_title($node) {
   $display_title = variable_get('userreview_form_title', t('Share your opinion!'));
   $node_translation_terms = array(
-    '%node_type' => node_get_name($node->type),
+    '%node_type' => node_get_types('name', $node),
     '%node_title' => $node->title,
   );
   $display_title = t($display_title, $node_translation_terms);
@@ -435,7 +466,7 @@ function get_userreview_node($content_node, $uid = 0, $default = false) {
   } else {
     $display_title = variable_get('userreview_otheruser_label', t('Review of %node_type: %node_title by %user_name'));
   }
-  $display_title = str_replace('%node_type', node_get_name($content_node->type), $display_title);
+  $display_title = str_replace('%node_type', node_get_types('name', $content_node), $display_title);
   $display_title = str_replace('%node_title', $content_node->title, $display_title);
   if (strpos($display_title, '%user_name') >= 0) {
     $user_criteria = array('uid'=>$uid);
@@ -565,7 +596,7 @@ function userreview_insert($node) {
   //store the vote using votingapi
   $vobj = new stdClass();
   $vobj->value = $node->vote_value;
-  $vobj->value_type = VOTINGAPI_VALUE_TYPE_PERCENT;
+  $vobj->value_type = USERREVIEW_VOTINGAPI_VALUE_TYPE;
   $vobj->tag = $node->vote_tag;
   votingapi_set_vote($node->content_type, $node->content_id, $vobj, $user->uid);
 
@@ -608,7 +639,7 @@ function userreview_update($node) {
   //store the vote using votingapi
   $vote = new stdClass();
   $vote->value = $node->vote_value;
-  $vote->value_type = VOTINGAPI_VALUE_TYPE_PERCENT;
+  $vote->value_type = USERREVIEW_VOTINGAPI_VALUE_TYPE;
   $vote->tag = $node->vote_tag;
   votingapi_set_vote($node->content_type, $node->content_id, $vote, $user->uid);
   
@@ -680,13 +711,20 @@ function userreview_view(&$node, $teaser = FALSE, $page = FALSE) {
   }
   $node = node_prepare($node, $teaser); // is this necessary?
   if ($teaser) {
-    $node->teaser = theme('userreview_teaser', $node);
+    $node->content['teaser'] = array(
+      '#value' => theme('userreview_teaser', $node),
+      '#weight' => 1,
+    );
   } else {
-    $node->body = theme('userreview_teaser', $node);
+    $node->content['body'] = array(
+      '#value' => theme('userreview_teaser', $node),
+      '#weight' => 1,
+    );
   }
   
   //remove the title, since the title is shown in the above theming
   unset($node->title);
+  return $node;
 }
 
 
@@ -711,16 +749,28 @@ function userreview_link($type, $node = 0, $main = 0) {
       if (variable_get('userreview_show_count_votes_in_teaser', false) && user_access('access content')) {
         $all = $node->userreview->count_votes;
         if ($all) {
-          $links[] = l(format_plural($all, '1 review', '%count reviews'), "node/$node->nid", array('title' => t('Jump to the reviews for this item.')));
+          $links['userreview_count_votes'] = array(
+            'title' => format_plural($all, '1 review', '@count reviews'),
+            'href' => "node/$node->nid",
+            'attributes' => array('title' => t('Jump to the reviews for this item.'))
+          );          
         }
         else if (user_access('create user reviews')) {
-          $links[] = l(t('add new review'), "node/$node->nid", array('title' => t('Add a new review to this item.')));
+          $links['userreview_count_votes'] = array(
+            'title' => t('add new review'),
+            'href' => "node/$node->nid",
+            'attributes' => array('title' => t('Add a new review to this item.'))
+          );          
         }
       }
     }
   }
   if ($node->type == 'userreview' && !$main && variable_get('userreview_show_link_to_reviewed', false)) {
-  	$links[] = l(t('See reviewed item'), "node/$node->content_id", array(t('Open the item that was reviewed')));
+  	$links['userreview_reviewed_item'] = array( 
+      'title' => t('See reviewed item'),
+      'href' => "node/$node->content_id",
+      'attributes' => array('title' => t('Open the item that was reviewed'))
+    );          
   }
   return $links;
 }
@@ -825,7 +875,6 @@ function theme_userreview_included_form($title, $form_html) {
       '#title' => check_plain($title),
       '#children' => $form_html
     );
-    
     $output .= theme('fieldset', $display);
     return $output;
 }
@@ -1181,6 +1230,4 @@ function userreview_get_placeholders($node) {
   
   return $placeholders;
 }
-
-
 ?>
