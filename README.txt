@@ -23,9 +23,16 @@ overlapping voting systems.
 Userreview forms & data is now easily accessible but unobtrusive.  Only average vote for each node still 
 appears uncollapsed.
 
+2006/12/18 - added some display features. It now is possible to hide the current user's review, have the reviews be teasered,
+and have a 'add a review' link. Some bugs regarding support for the view module have been fixed and exprimental PostgreSQL 
+support has been added (thanks to Chris Brown, http://drupal.org/user/65954).
+
+2007/02/08 - added setting to change the number of decimal places on vite result and a css class dependend on the result. The module 
+now integrates with pathauto, too, and the last annoyances about the default views view have been removed.
+
 DEPENDENCIES
 This module works in Drupal 4.7.  It requires the votingapi module and the views module to function.  
-Currently only written for MySQL but should be easy to add support for Postgre SQL.
+PostgreSQL support is experimental.
 
 INSTALLATION
 (1) Place the userreview folder in your modules direcotry.  This folder should contain userreview.module, 
@@ -56,6 +63,8 @@ Userreviews are nodes, and thus they work well with userpoints module.  To grant
 simply set the points for the userreview node in the admin/settings/userpoints area.
 
 CONTRIBUTORS
-David Donohue (dado@drupal.org) - this module
+Gerd Riesselmann (userreview@gerd-riesselmann.net) - this module
+Chris Brown (http://drupal.org/user/65954) - PostgreSQL support
+David Donohue (dado@drupal.org) - initial development of this module
 Jeff Eaton (eaton@drupal.org) - votingapi module
 Earl Miles (merlinofchaos@drupal.org) - views module
