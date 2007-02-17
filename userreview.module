@@ -747,10 +747,10 @@ function userreview_link($type, $node = 0, $main = 0) {
     if ($main) {
       // Main page: display the number of comments that have been posted.
       if (variable_get('userreview_show_count_votes_in_teaser', false) && user_access('access content')) {
-        $all = $node->userreview->count_votes;
-        if ($all) {
+        $count_votes = $node->userreview->count_votes;
+        if ($count_votes) {
           $links['userreview_count_votes'] = array(
-            'title' => format_plural($all, '1 review', '@count reviews'),
+            'title' => format_plural($count_votes->value, '1 review', '@count reviews'),
             'href' => "node/$node->nid",
             'attributes' => array('title' => t('Jump to the reviews for this item.'))
           );          
