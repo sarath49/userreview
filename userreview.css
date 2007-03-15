@@ -69,14 +69,7 @@ table.userreview_selector_table {
     margin: 0em;
 }
 
-/* the td element containing each vote option, within the vote selector form */
-td.userreview_vote_option_container {
-  vertical-align:middle;
-}
-.userreview_vote_option_container a:hover{
-    text-decoration: none;
-}
-a.userreview_vote_option {
+.userreview_vote_option {
   color: #A1A1A1;
   background-color: #FFFFFF;
   text-decoration: none;
@@ -86,7 +79,7 @@ a.userreview_vote_option {
   font-size: 1.2em;
 }
 
-a.userreview_vote_option_hover {
+.userreview_vote_option_hover {
   border: 2px solid #000000;
   background-color: #33FF33;
   color: #000000;
@@ -96,6 +89,7 @@ a.userreview_vote_option_hover {
   padding: 0em .2em 0em .2em;
   font-size: 1.2em;
 }
+
 .userreview_vote_selected {
   border: 2px solid #000000;
   background-color: #FF33FF;
@@ -105,18 +99,6 @@ a.userreview_vote_option_hover {
   margin-right: 0.1em;
   padding: 0em .2em 0em .2em;
   font-size: 1.2em;
-}
-/*
-color: #000000;
-  font-size: 2.3em;
-  */
-a.userreview_vote_selected {
-  color: #000000;
-  text-decoration: none;
-}
-a.userreview_vote_selected:hover {
-  color: #000000;
-  text-decoration: none;
 }
 
 /* Reporting voting results */

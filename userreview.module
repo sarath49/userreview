@@ -287,8 +287,17 @@ function userreview_form(&$node) {
   //set the breadcrumb
   userreview_set_breadcrumb($node);
   
+  drupal_add_js(drupal_get_path('module', 'userreview') . '/userreview.js');
   $add_elements = array();
-  $add_elements['vote_value'] = userreview_vote_selector($node->vote_value, variable_get('userreview_default_vote',''));
+  $add_elements['vote_value'] = array(
+    '#type' => 'select',
+    '#title' => variable_get('userreview_vote_title',t('Your vote')),
+    '#description' => variable_get('userreview_vote_description',t('Select a value from 0 (worst) to 10 (best)')), 
+    '#default_value' => ($node->vote_value == null) ? variable_get('userreview_default_vote','') : (string)($node->vote_value),
+    '#options' => array('0'=>'0', '1'=>'1', '2'=>'2', '3'=>'3', '4'=>'4', '5'=>'5', '6'=>'6', '7'=>'7', '8'=>'8', '9'=>'9', '10'=>'10'),
+    '#required' => TRUE,
+    '#weight' => -5
+  );
   $add_elements['title'] = array(
     '#type' => 'textfield', 
     '#title' => t('Title'),
@@ -503,85 +512,6 @@ function get_userreviews($node) {
 } 
 
 /**
- * Return the form data for generation of the voting form element.
- */
-function userreview_vote_selector($vote_value, $default='') {
-  if ($vote_value==null) {
-    $vote_value = $default;
-  }
-  $vote_value = (string)$vote_value;
-  $selector = array(
-    '#type' => 'userreview_number_selector', 
-    '#title' => variable_get('userreview_vote_title',t('Your vote')),
-    '#description' => variable_get('userreview_vote_description',t('Select a value from 0 (worst) to 10 (best)')), 
-    '#default_value' => $vote_value,
-    '#weight' => -5);
-  return $selector;
-}
-
-/**
- * Implementation of hook_elements().  This defines the default settings for the
- * userreview_number_selector form element
- */
-function userreview_elements() {
-  $type = array();
-  $options = array('0'=>'0', '1'=>'1', '2'=>'2', '3'=>'3', '4'=>'4', '5'=>'5', '6'=>'6', '7'=>'7', '8'=>'8', '9'=>'9', '10'=>'10');
-  $type['userreview_number_selector'] = array(
-    '#type'=>'userreview_number_selector',
-    '#options' => $options,
-  );
-  return $type;
-}
-
-/**
- * The actual HTML that creates a userreview_number_selector element is
- * specified here.  It employs some javascript to populate a hidden form element
- * with the value associated with the most recently clicked vote number
- */
-function theme_userreview_number_selector($element) {
-  static $userreview_js_has_been_loaded;
-  global $base_url;
-  //define some variables
-  $userreview_option_css_class = 'userreview_vote_option';
-  $userreview_selected_css_class = 'userreview_vote_selected';
-  // We only load the js file once per request
-  if (!$userreview_js_has_been_loaded) {
-    $userreview_mod_path = drupal_get_path('module', 'userreview');
-    drupal_add_js($userreview_mod_path .'/userreview.js');
-    $userreview_js_has_been_loaded = true;
-  }
-  $element_name = $element['#parents'][0];
-  $element_form_id = 'edit-' . $element_name;
-  $element_form_name = 'edit[' . $element_name . ']';
-  $element_number_base = $element_name . '_userreview_number_selector_';
-  
-  $element_html = '';
-  $extra_html = '';
-  $element_html .= '<input type="hidden" id="' . $element_form_id . '" name="' . $element_form_name . '" value="' . $element["#default_value"] . '"/>';
-  $extra_html .= '<table class="userreview_selector_table"><tr>';
-  $classchange_js = "if (this.className=='".$userreview_option_css_class."') this.className='".$userreview_option_css_class."_hover';";
-  $classchangeback_js = "if (this.className=='".$userreview_option_css_class."_hover') this.className='".$userreview_option_css_class."';";
-  foreach($element["#options"] as $val=>$display) {
-    $cssclass = $userreview_option_css_class;
-    $domouseover = true;
-    if ($val == $element["#default_value"]) {
-      $cssclass = $userreview_selected_css_class;
-    }
-    $click_js = "userreview_select_vote(this, '$element_number_base', '$userreview_option_css_class', '$userreview_selected_css_class', '$element_form_id', '$val');";
-    $extra_html .= '<td class="'.$userreview_option_css_class.'_container"><a ';
-    $extra_html .= 'id="' . $element_number_base . $val . '" ';
-    $extra_html .= 'class="' . $cssclass . '" ';
-    $extra_html .= 'onmouseover="'.$classchange_js.'" ';
-    $extra_html .= 'onmouseout="'.$classchangeback_js.'" ';
-    $extra_html .= 'onclick="'.$click_js.'">';
-    $extra_html .= $display;
-    $extra_html .= '</a></td>';
-  }
-  $extra_html .= '</tr></table>';
-  return theme('form_element', $element['#title'], $element_html . $extra_html, $element['#description'], $element_form_id, $element['#required'], form_get_error($element));
-}
-
-/**
  * Implementation of hook_insert().
  *
  * As a new node is being inserted into the database, add userreview field data
@@ -589,9 +519,6 @@ function theme_userreview_number_selector($element) {
  */
 function userreview_insert($node) {
   global $user;
-  if (isset($_REQUEST['edit']['vote_value'])) {
-    $node->vote_value = (int)$_REQUEST['edit']['vote_value'];
-  }
 
   //store the vote using votingapi
   $vobj = new stdClass();
@@ -628,7 +555,6 @@ function userreview_insert($node) {
  * votingapi.
  */
 function userreview_update($node) {
-
   if (isset($_REQUEST['edit']['vote_value'])) {
     $node->vote_value = (int)$_REQUEST['edit']['vote_value'];
   }
