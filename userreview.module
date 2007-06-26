@@ -1069,7 +1069,7 @@ function userreview_pathauto($op) {
       $settings['patterndefault'] = '';
       $settings['bulkname'] = t('Bulk update userreview pages');
       $settings['bulkdescr'] = 
-        t('Generate aliases for all existing userreview pages which do not already have aliases.');
+        t('Generate aliases for all existing "userreview/of"-pages which do not already have aliases.  "userreview/of" lists all reviews for a given node. Note that these pages are not used for a single user review. To change the url for a single user review, change the url for nodes of type "review" in the node section.');
       $settings['placeholders'] = array(
         t('[reviewed item nid]') => t('For userreview nodes, the node id of the reviewed item.'),
         t('[reviewed item title]') => t('For userreview nodes, the title of the reviewed item.'),
@@ -1146,10 +1146,10 @@ function userreview_get_placeholders($node) {
   );
 
   if ($node->content_id) {
-		$reviewed_node = node_load($node->content_id);
-    if ($reviewed_node) {
-    	$placeholders[t('[reviewed item nid]')] = $reviewed_node->nid;
-    	$placeholders[t('[reviewed item title]')] = $reviewed_node->title;
+    $reviewed_node = node_load($node->content_id);
+    if ($reviewed_node && function_exists('pathauto_cleanstring')) {
+    	$placeholders[t('[reviewed item nid]')] = pathauto_cleanstring($reviewed_node->nid);
+    	$placeholders[t('[reviewed item title]')] = pathauto_cleanstring($reviewed_node->title);
     	$placeholders[t('[reviewed item path]')] = drupal_get_path_alias('node/' . $reviewed_node->nid);
     }
   }
