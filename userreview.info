@@ -1,4 +1,3 @@
-; $Id$
 name = Userreview
 description = Enables users to post a review of any node.
 dependencies = views votingapi
